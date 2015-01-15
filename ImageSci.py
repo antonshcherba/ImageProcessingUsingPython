@@ -1,5 +1,6 @@
 __author__ = 'aDmin'
 
+import math
 import scipy
 from scipy import ndimage
 from scipy import misc
@@ -30,6 +31,61 @@ def imageQuantization(levels):
 
     return lenaQuantized
 
+def blurImage(image,matrixSize):
+    radius = (matrixSize-1) / 2
+    blurredImage = image
+
+    width, height, channel = image.shape
+    for i in range(0,width-1):
+        for j in range(0,height-1):
+            di = dj = ddi = ddj = 0
+            if i-radius < 0:
+                di = i - radius
+            if j-radius < 0:
+                dj = j - radius
+            if i+radius > width:
+                ddi = i+radius-width
+            if j+radius > height:
+                ddj = j+radius-height
+            for k in range(0,channel-1):
+                blurredImage[i,j,k] = np.average(image[i-radius-di:i+radius-ddi,j-radius-dj:j+radius-ddj,k])
+
+    return blurredImage
+
+def ImageRotation():
+    auto = plt.imread('D:/Anton/coursera/1.jpg')
+    plt.imshow(auto)
+    plt.show()
+
+    autoRotated = np.zeros((800,800,3),dtype=np.int32)
+    #autoRotated.shape = auto.shape
+    width,height, c = auto.shape
+
+    cos = math.cos(np.pi/4)
+    sin = math.sin(np.pi/4)
+    rotationMatrix = [[cos,sin,0],
+                      [-sin,cos,0],
+                      [0,0,1]]
+    for i in range(0,width-1):
+        for j in range(0,height-1):
+
+            # x = int(i * cos - j * sin)
+            # y = int(i * sin + j *cos)
+            matrix = np.dot([i, j, 1],rotationMatrix)
+            x = int(math.ceil( matrix[0]))
+            y = int(math.ceil( matrix[1]))
+
+            #autoRotated[x,y] = auto[i,j]
+            autoRotated[x,y,0] = auto[i,j,0]
+            autoRotated[x,y,1] = auto[i,j,1]
+            autoRotated[x,y,2] = auto[i,j,2]
+
+
+   #aaa = blurImage(autoRotated,5)
+    plt.imshow(autoRotated,None)
+    plt.show()
+    return
+
 def process():
     lena = misc.lena()
     # misc.imsave('lena.png', lena)
@@ -49,23 +105,15 @@ def process():
 
     lena_memmap = np.memmap('lena.raw',dtype=np.int32,shape=(512,512))
 
-    # auto = plt.imread('D:/Anton/coursera/1.jpg')
-    # autoWithBlur = auto
+
     # plt.imshow(auto)
     # plt.show()
 
-    # width, height, channel = auto.shape
-    # for i in range(0,width-1):
-    #     for j in range(0,height-1):
-    #         if i > 0 and j > 0 and i < width-1 and j < height-1:
-    #             for k in range(0,channel-1):
-    #                 autoWithBlur[i,j,k] = np.average([auto[i-1,j,k], auto[i-1,j-1,k], auto[i,j-1,k], auto[i+1,j,k], auto[i,j+1,k], auto[i+1,j+1,k], auto[i-1,j+1,k], auto[i+1,j-1,k]])
     # print width,height, channel
     #
     # plt.imshow(autoWithBlur)
     # plt.show()
 
-    lenaQuantized = imageQuantization(4)
-    plt.imshow(lenaQuantized,plt.cm.gray)
-    plt.show()
+
+
     return
